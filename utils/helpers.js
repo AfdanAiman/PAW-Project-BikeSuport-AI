@@ -1,0 +1,10 @@
+// Helper format mata uang Rupiah sesuai kebutuhan katalog
+const formatRupiah = (number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(number);
+};
+
+module.exports = { formatRupiah };
