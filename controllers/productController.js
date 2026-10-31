@@ -1,9 +1,15 @@
 const ProductModel = require('../models/productModel');
-const { formatRupiah } = require('../utils/helpers');
+
+const formatRupiah = (number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(number);
+};
 
 class ProductController {
-    // Render Halaman Frontend EJS
-    static renderFrontend(req, res) {
+    static index(req, res) {
         const products = ProductModel.getAll();
         res.render('index', {
             title: 'BikeSupport — Katalog Sparepart & E-Bike',
@@ -12,15 +18,18 @@ class ProductController {
         });
     }
 
-    // Endpoint API /api/produk
-    static getApiProducts(req, res) {
-        const products = ProductModel.getAll();
-        res.json({
-            status: "success",
-            statusCode: 200,
-            message: "Data produk berhasil diambil dari server BikeSupport",
-            count: products.length,
-            data: products
+    static detail(req, res) {
+        const productId = req.params.id;
+        const product = ProductModel.getById(productId);
+
+        if (!product) {
+            return res.status(404).send('Produk tidak ditemukan');
+        }
+
+        res.render('detail', {
+            title: `${product.name} — BikeSupport`,
+            product: product,
+            formatRupiah: formatRupiah
         });
     }
 }
