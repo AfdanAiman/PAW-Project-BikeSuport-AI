@@ -62,7 +62,7 @@
     <header class="hero-section">
         <div class="container">
             <span class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-50 mb-3 px-3 py-2 rounded-pill fw-semibold">
-                PPAW Week 7 — MVC & REST API Integration
+                PPAW Week 8 — Database & CRUD Integration
             </span>
             <h1 class="fw-bold display-5 mb-3 text-white">Pusat Sparepart Sepeda & E-Bike</h1>
             <p class="lead text-light opacity-75 mb-4 mx-auto" style="max-width: 700px;">
@@ -79,16 +79,37 @@
 
     <!-- Main Content Katalog Produk -->
     <div class="container my-5 bg-white p-4 rounded-4 shadow-sm" id="katalog">
-        <div class="mb-4 pb-2 border-bottom">
-            <h2 class="fw-bold text-dark m-0">Katalog Produk & Suku Cadang</h2>
-            <p class="text-muted m-0 small">Klik pada nama produk untuk melihat detail spesifikasi secara lengkap.</p>
+        <!-- Header Katalog & Tombol Tambah Produk -->
+        <div class="mb-4 pb-3 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Katalog Produk & Suku Cadang</h2>
+                <p class="text-muted m-0 small">Klik pada nama produk untuk melihat detail spesifikasi secara lengkap.</p>
+            </div>
+            <div>
+                <a href="/tambah-produk" class="btn btn-primary fw-semibold px-3 py-2 shadow-sm">
+                    + Tambah Produk Baru
+                </a>
+            </div>
         </div>
+
+        <form action="/" method="GET" class="d-flex gap-2">
+        <input type="text" 
+               name="search" 
+               value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" 
+               placeholder="Cari nama produk..." 
+               class="form-control form-control-sm" 
+               style="width: 220px;">
+        <button type="submit" class="btn btn-dark btn-sm fw-semibold">Cari</button>
+        <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Reset</a>
+        <% } %>
+    </form>
 
         <div class="product-list">
             <% products.forEach(product => { %>
                 <div class="product-item row align-items-center">
                     <!-- Kiri: Nama Produk (Bisa diklik), Deskripsi, Kategori -->
-                    <div class="col-md-8 mb-3 mb-md-0">
+                    <div class="col-md-7 mb-3 mb-md-0">
                         <h5 class="fw-bold mb-1">
                             <a href="/produk/<%= product.id %>" class="product-title-link">
                                 <%= product.name %>
@@ -98,14 +119,24 @@
                         <span class="badge bg-light text-secondary border px-2 py-1"><%= product.category %></span>
                     </div>
 
-                    <!-- Kanan: Harga & Tombol WhatsApp -->
-                    <div class="col-md-4 text-md-end d-flex flex-column align-items-md-end align-items-start gap-2">
+                    <!-- Kanan: Harga & Tombol Aksi (WhatsApp, Edit, Hapus) -->
+                    <div class="col-md-5 text-md-end d-flex flex-column align-items-md-end align-items-start gap-2">
                         <span class="text-success fs-5 fw-bold"><%= formatRupiah(product.price) %></span>
-                        <a href="https://wa.me/6285158110356?text=Halo%20Admin%20BikeSupport,%20saya%20tertarik%20untuk%20membeli%20produk:%20*<%= encodeURIComponent(product.name) %>*" 
-                           target="_blank" 
-                           class="btn btn-outline-success btn-sm fw-semibold px-3 py-2">
-                           💬 Pesan via WhatsApp
-                        </a>
+                        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                            <a href="https://wa.me/6285158110356?text=Halo%20Admin%20BikeSupport,%20saya%20tertarik%20untuk%20membeli%20produk:%20*<%= encodeURIComponent(product.name) %>*" 
+                               target="_blank" 
+                               class="btn btn-outline-success btn-sm fw-semibold px-3 py-1">
+                                💬 Pesan WA
+                            </a>
+                            <a href="/edit-produk/<%= product.id %>" class="btn btn-warning btn-sm fw-semibold px-3 py-1 text-dark">
+                                ✏️ Edit
+                            </a>
+                            <form action="/hapus-produk/<%= product.id %>" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus produk <%= product.name %> ini?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm fw-semibold px-3 py-1">
+                                    🗑️ Hapus
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             <% }) %>
@@ -115,7 +146,7 @@
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-4 mt-5">
         <div class="container">
-            <p class="mb-0 small text-muted">&copy; 2026 BikeSupport Web Store. Dikembangkan untuk Tugas PPAW Week 7.</p>
+            <p class="mb-0 small text-muted">&copy; 2026 BikeSupport Web Store. Dikembangkan untuk Tugas PPAW Project Berkelanjutan.</p>
         </div>
     </footer>
 
