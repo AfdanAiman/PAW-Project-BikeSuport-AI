@@ -1,0 +1,52 @@
+<%
+  const _st = (typeof store !== 'undefined') ? store : { open: true };
+  const _today = new Date().toISOString().slice(0, 10);
+%>
+<div class="modal fade" id="storeModal" tabindex="-1" aria-labelledby="storeModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="POST" action="/toko/status" style="border-radius:16px;border:0">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="modal-title h5 fw-bold" id="storeModalTitle">
+          <%= _st.open ? 'Tutup Toko Sementara' : 'Buka Kembali Toko' %>
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="small text-muted mb-3">
+          Status saat ini:
+          <% if (_st.open) { %><span class="badge text-bg-success">Toko Buka</span><% } else { %><span class="badge text-bg-danger">Toko Tutup</span><% } %>
+        </p>
+
+        <% if (_st.open) { %>
+          <input type="hidden" name="action" value="close">
+          <div class="mb-3">
+            <label for="storeMsg" class="form-label">Alasan (opsional)</label>
+            <input type="text" id="storeMsg" name="message" class="form-control" maxlength="200" placeholder="Contoh: Libur akhir pekan / pesanan sedang penuh">
+          </div>
+          <div class="mb-3">
+            <label for="storeDate" class="form-label">Buka kembali pada (opsional)</label>
+            <input type="date" id="storeDate" name="reopenAt" class="form-control" min="<%= _today %>">
+          </div>
+        <% } else { %>
+          <input type="hidden" name="action" value="open">
+          <p class="small mb-3">Toko akan kembali menerima pesanan dan tombol pemesanan aktif lagi.</p>
+        <% } %>
+
+        <div>
+          <label for="storePin" class="form-label">PIN Admin</label>
+          <input type="password" id="storePin" name="pin" class="form-control" required autocomplete="off" placeholder="Masukkan PIN">
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Batal</button>
+        <% if (_st.open) { %>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-moon-stars me-1"></i> Tutup Toko</button>
+        <% } else { %>
+          <button type="submit" class="btn btn-success"><i class="bi bi-shop me-1"></i> Buka Toko</button>
+        <% } %>
+      </div>
+    </form>
+  </div>
+</div>

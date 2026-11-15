@@ -1,0 +1,151 @@
+<style>
+  .ai-fab{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;border:0;color:#fff;font-size:1.5rem;cursor:pointer;z-index:1050;
+    background:linear-gradient(135deg,var(--brand,#4f46e5),#7c3aed);box-shadow:0 10px 26px -6px rgba(79,70,229,.7);transition:transform .2s}
+  .ai-fab:hover{transform:scale(1.06)}
+  .ai-panel{position:fixed;right:22px;bottom:94px;width:min(390px,calc(100vw - 24px));height:min(580px,calc(100vh - 120px));background:#fff;border-radius:20px;
+    box-shadow:0 24px 60px -12px rgba(15,23,42,.35);border:1px solid #e2e8f0;display:none;flex-direction:column;overflow:hidden;z-index:1050}
+  .ai-panel.open{display:flex;animation:aiIn .22s ease}
+  @keyframes aiIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+  .ai-head{background:linear-gradient(135deg,#312e81,#4f46e5);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .ai-avatar{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:none}
+  .ai-title{font-family:'Outfit',sans-serif;font-weight:600;line-height:1.15}
+  .ai-sub{font-size:.75rem;opacity:.85;display:flex;align-items:center;gap:6px}
+  .ai-sub::before{content:'';width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block}
+  .ai-x{margin-left:auto;background:rgba(255,255,255,.12);border:0;color:#fff;width:32px;height:32px;border-radius:9px;cursor:pointer}
+  .ai-x:hover{background:rgba(255,255,255,.22)}
+  .ai-msgs{flex:1;overflow-y:auto;padding:16px;background:#f6f7fb;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+  .ai-msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:.92rem;line-height:1.5;word-wrap:break-word;white-space:pre-wrap}
+  .ai-msg.user{align-self:flex-end;background:var(--brand,#4f46e5);color:#fff;border-bottom-right-radius:5px}
+  .ai-msg.bot{align-self:flex-start;background:#fff;color:#1e293b;border:1px solid #e2e8f0;border-bottom-left-radius:5px}
+  .ai-msg.error{align-self:flex-start;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-bottom-left-radius:5px}
+  .ai-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;background:#f6f7fb}
+  .ai-chip{border:1px solid #c7d2fe;background:#eef2ff;color:#4338ca;border-radius:999px;font-size:.8rem;font-weight:500;padding:6px 12px;cursor:pointer;transition:.15s}
+  .ai-chip:hover{background:#e0e7ff}
+  .ai-form{display:flex;gap:8px;padding:12px;border-top:1px solid #e2e8f0;background:#fff}
+  .ai-form input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:12px;padding:10px 14px;font-size:.92rem}
+  .ai-form input:focus{outline:0;border-color:var(--brand,#4f46e5);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+  .ai-send{width:44px;border:0;border-radius:12px;background:var(--brand,#4f46e5);color:#fff;cursor:pointer}
+  .ai-send:disabled,.ai-form input:disabled{opacity:.6;cursor:not-allowed}
+  .ai-note{font-size:.7rem;color:#94a3b8;text-align:center;padding:0 12px 10px;background:#fff}
+  .ai-dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#94a3b8;animation:aiB 1.2s infinite}
+  .ai-dots span:nth-child(2){animation-delay:.2s}.ai-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes aiB{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+  @media (max-width:575.98px){
+    .ai-fab{right:16px;bottom:16px}
+    .ai-panel{right:12px;left:12px;width:auto;bottom:84px;height:min(70vh,560px)}
+  }
+</style>
+
+<button class="ai-fab" id="aiFab" type="button" aria-label="Buka asisten AI" aria-controls="aiPanel" aria-expanded="false"><i class="bi bi-stars"></i></button>
+
+<section class="ai-panel" id="aiPanel" role="dialog" aria-label="Asisten AI BikeSupport">
+  <div class="ai-head">
+    <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+    <div>
+      <div class="ai-title">Asisten BikeSupport</div>
+      <div class="ai-sub">Online · seputar produk toko</div>
+    </div>
+    <button class="ai-x" id="aiClose" type="button" aria-label="Tutup"><i class="bi bi-x-lg"></i></button>
+  </div>
+
+  <div class="ai-msgs" id="aiMsgs" aria-live="polite">
+    <div class="ai-msg bot">Halo! 👋 Saya asisten BikeSupport. Saya bisa membantu informasi produk, kategori, dan harga di toko ini. Silakan bertanya.</div>
+  </div>
+
+  <div class="ai-chips" id="aiChips">
+    <button type="button" class="ai-chip">Apa saja produk yang tersedia?</button>
+    <button type="button" class="ai-chip">Produk termurah?</button>
+    <button type="button" class="ai-chip">Produk kategori Aksesoris</button>
+    <button type="button" class="ai-chip">Ada produk E-Bike?</button>
+  </div>
+
+  <form class="ai-form" id="aiForm" autocomplete="off">
+    <input type="text" id="aiInput" maxlength="500" placeholder="Tulis pertanyaan Anda..." aria-label="Pertanyaan" required>
+    <button class="ai-send" id="aiSend" type="submit" aria-label="Kirim"><i class="bi bi-send-fill"></i></button>
+  </form>
+  <div class="ai-note">Asisten AI bisa keliru. Cek kembali info penting.</div>
+</section>
+
+<script>
+(function () {
+  var fab = document.getElementById('aiFab');
+  var panel = document.getElementById('aiPanel');
+  var msgs = document.getElementById('aiMsgs');
+  var chips = document.getElementById('aiChips');
+  var form = document.getElementById('aiForm');
+  var input = document.getElementById('aiInput');
+  var sendBtn = document.getElementById('aiSend');
+  var busy = false;
+
+  function toggle(open) {
+    var willOpen = typeof open === 'boolean' ? open : !panel.classList.contains('open');
+    panel.classList.toggle('open', willOpen);
+    fab.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) input.focus();
+  }
+  fab.addEventListener('click', function () { toggle(); });
+  document.getElementById('aiClose').addEventListener('click', function () { toggle(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggle(false); });
+
+  // Escape HTML dulu, baru ubah **tebal** dan bullet — aman dari XSS.
+  function format(text) {
+    var s = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/^[ \t]*[*\-][ \t]+/gm, '• ');
+    return s;
+  }
+
+  function addMsg(text, type, asHtml) {
+    var d = document.createElement('div');
+    d.className = 'ai-msg ' + type;
+    if (asHtml) d.innerHTML = format(text); else d.textContent = text;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  async function send(text) {
+    text = (text || '').trim();
+    if (!text || busy) return;
+    busy = true;
+    chips.style.display = 'none';
+    addMsg(text, 'user', false);
+    input.value = '';
+    input.disabled = sendBtn.disabled = true;
+
+    var loading = document.createElement('div');
+    loading.className = 'ai-msg bot ai-dots';
+    loading.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(loading);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    try {
+      var res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      var json = await res.json().catch(function () { return {}; });
+      loading.remove();
+      if (!res.ok || !json.success) {
+        addMsg(json.error || 'Terjadi kesalahan. Silakan coba lagi.', 'error', false);
+      } else {
+        addMsg(json.data.reply, 'bot', true);
+      }
+    } catch (err) {
+      loading.remove();
+      addMsg('Tidak dapat terhubung ke server. Periksa koneksi Anda.', 'error', false);
+    } finally {
+      busy = false;
+      input.disabled = sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener('submit', function (e) { e.preventDefault(); send(input.value); });
+  chips.addEventListener('click', function (e) {
+    var b = e.target.closest('.ai-chip');
+    if (b) send(b.textContent);
+  });
+})();
+</script>

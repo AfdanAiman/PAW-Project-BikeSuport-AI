@@ -4,8 +4,12 @@ const config = require('./config/appconfig');
 const logger = require('./middlewares/logger');
 const webRoutes = require('./routes/webRoutes');
 const apiRoutes = require('./routes/apiRoutes');
+const chatRoutes = require('./routes/chat.routes'); 
 const sequelize = require('./config/database');
 const ProductModel = require('./models/productModel');
+
+const storeStatus = require('./middlewares/storeStatus'); // Middleware status toko
+const storeRoutes = require('./routes/storeRoutes');  
 
 const app = express();
 const PORT = process.env.PORT || config.port;
@@ -21,8 +25,15 @@ app.use(express.urlencoded({ extended: true }));
 // Pasang Middleware Logger Custom (Pencatat Request)
 app.use(logger);
 
-// Pasang Routes Web dan API
-app.use('/', webRoutes);
+// PASANG MIDDLEWARE STORE STATUS (PENTING: Agar status toko terbaca di semua halaman & router)
+app.use(storeStatus);
+
+// Pasang Routes Toko dan Web
+app.use('/', storeRoutes);         // Route untuk aksi buka/tutup toko
+app.use('/', webRoutes);           // Route halaman utama & katalog
+
+// Pasang Routes API
+app.use('/api/chat', chatRoutes); 
 app.use('/api', apiRoutes);
 
 // Fungsi untuk memasukkan data awal jika tabel kosong

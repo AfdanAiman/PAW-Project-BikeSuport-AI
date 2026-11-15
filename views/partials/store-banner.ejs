@@ -1,0 +1,27 @@
+<%
+  const _s = (typeof store !== 'undefined') ? store : { open: true };
+  const _flash = (typeof flash !== 'undefined') ? flash : '';
+  let _date = '';
+  if (_s.reopenAt) {
+    const d = new Date(_s.reopenAt);
+    _date = isNaN(d) ? _s.reopenAt : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+%>
+<% if (!_s.open) { %>
+  <div class="store-banner" role="status">
+    <div class="container d-flex flex-wrap justify-content-center align-items-center gap-x-3 gap-2">
+      <span><i class="bi bi-moon-stars-fill me-1"></i><strong>Toko sedang tutup</strong> — pemesanan dihentikan sementara.</span>
+      <% if (_s.message) { %><span class="opacity-90"><%= _s.message %></span><% } %>
+      <% if (_date) { %><span class="store-banner-pill">Buka kembali: <%= _date %></span><% } %>
+    </div>
+  </div>
+<% } %>
+
+<% if (_flash) { %>
+  <div class="store-toast <%= _flash === 'pin-salah' ? 'err' : 'ok' %>" id="storeToast" role="alert">
+    <% if (_flash === 'pin-salah') { %><i class="bi bi-x-circle-fill me-2"></i>PIN admin salah.<% } %>
+    <% if (_flash === 'ditutup') { %><i class="bi bi-check-circle-fill me-2"></i>Toko berhasil ditutup.<% } %>
+    <% if (_flash === 'dibuka') { %><i class="bi bi-check-circle-fill me-2"></i>Toko berhasil dibuka kembali.<% } %>
+  </div>
+  <script>setTimeout(function(){var t=document.getElementById('storeToast');if(t)t.remove();},4500);</script>
+<% } %>
