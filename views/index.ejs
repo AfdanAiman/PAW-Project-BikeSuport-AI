@@ -101,9 +101,9 @@
     </div>
   </header>
 
-  <!-- Metrics -->
+  <!-- Metrics / Ringkasan -->
   <section class="container metrics" aria-label="Ringkasan">
-    
+   
       <div class="col-6 col-lg-3">
         <div class="surface metric">
           <div class="metric-icon" style="background:#fffbeb;color:#d97706"><i class="bi bi-shield-check"></i></div>
@@ -192,12 +192,15 @@
                 <div class="foot-actions">
                   <% if (isOpen) { %>
                   <a href="https://wa.me/6285158110356?text=<%= encodeURIComponent(waText) %>" target="_blank" rel="noopener"
-                     class="btn btn-wa" title="Pesan via WhatsApp" aria-label="Pesan <%= product.name %> via WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                       class="btn btn-wa" title="Pesan via WhatsApp" aria-label="Pesan <%= product.name %> via WhatsApp"><i class="bi bi-whatsapp"></i></a>
                   <% } else { %>
                   <button type="button" class="btn btn-wa closed" disabled title="Toko sedang tutup" aria-label="Toko sedang tutup, pemesanan dinonaktifkan"><i class="bi bi-moon-stars"></i></button>
                   <% } %>
+
+                  <!-- TOMBOL EDIT & HAPUS HANYA MUNCUL JIKA ADMIN LOGIN -->
+                  <% if (locals.isAdmin) { %>
                   <div class="dropdown">
-                    <button class="btn btn-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu produk <%= product.name %>"><i class="bi bi-three-dots-vertical"></i></button>
+                    <button class="btn btn-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu produk"><i class="bi bi-three-dots-vertical"></i></button>
                     <ul class="dropdown-menu dropdown-menu-end">
                       <li><a class="dropdown-item" href="/produk/<%= product.id %>"><i class="bi bi-eye"></i> Lihat detail</a></li>
                       <li><a class="dropdown-item" href="/edit-produk/<%= product.id %>"><i class="bi bi-pencil-square"></i> Edit</a></li>
@@ -209,6 +212,7 @@
                       </li>
                     </ul>
                   </div>
+                  <% } %>
                 </div>
               </div>
             </article>
