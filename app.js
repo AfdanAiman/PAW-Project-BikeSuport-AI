@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session'); // <-- TAMBAHKAN INI
 const config = require('./config/appconfig');
 const logger = require('./middlewares/logger');
 const webRoutes = require('./routes/webRoutes');
@@ -8,7 +9,7 @@ const chatRoutes = require('./routes/chat.routes');
 const sequelize = require('./config/database');
 const ProductModel = require('./models/productModel');
 
-const storeStatus = require('./middlewares/storeStatus'); // Middleware status toko
+const storeStatus = require('./middlewares/storeStatus');
 const storeRoutes = require('./routes/storeRoutes');  
 
 const app = express();
@@ -22,15 +23,57 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Konfigurasi Session
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'bikesupport_secret_key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 Hari
+}));
+
+// Middleware Global agar variabel isAdmin terbaca di semua file EJS
+app.use((req, res, next) => {
+    res.locals.isAdmin = req.session.isAdmin || false;
+    next();
+});
+
 // Pasang Middleware Logger Custom (Pencatat Request)
 app.use(logger);
 
-// PASANG MIDDLEWARE STORE STATUS (PENTING: Agar status toko terbaca di semua halaman & router)
+// PASANG MIDDLEWARE STORE STATUS
 app.use(storeStatus);
 
+// --- RUTE LOGIN & LOGOUT ADMIN ---
+app.get('/login', (req, res) => {
+    if (req.session.isAdmin) return res.redirect('/');
+    res.render('login', { title: 'Login Admin — BikeSupport', error: null });
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    // Sesuaikan username & password admin di sini atau di .env
+    const adminUser = process.env.ADMIN_USERNAME || 'admin';
+    const adminPass = process.env.ADMIN_PASSWORD || 'bikesupport123';
+
+    if (username === adminUser && password === adminPass) {
+        req.session.isAdmin = true;
+        return res.redirect('/');
+    }
+    res.render('login', { 
+        title: 'Login Admin — BikeSupport', 
+        error: 'Username atau Password salah!' 
+    });
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+});
+
 // Pasang Routes Toko dan Web
-app.use('/', storeRoutes);         // Route untuk aksi buka/tutup toko
-app.use('/', webRoutes);           // Route halaman utama & katalog
+app.use('/', storeRoutes);         
+app.use('/', webRoutes);           
 
 // Pasang Routes API
 app.use('/api/chat', chatRoutes); 
@@ -80,7 +123,7 @@ async function seedInitialData() {
 sequelize.authenticate()
     .then(async () => {
         console.log('[Database] Berhasil terhubung ke PostgreSQL.');
-        await sequelize.sync({ alter: true }); // Sinkronisasi tabel otomatis
+        await sequelize.sync({ alter: true });
         await seedInitialData();
 
         app.listen(PORT, () => {
