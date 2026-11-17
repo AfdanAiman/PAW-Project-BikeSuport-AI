@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ProductController = require('../controllers/productController');
-const { isAdmin } = require('../middleware/authMiddleware');
+const { isAdmin } = require('../middlewares/authMiddleware');
 
 // Route Halaman Utama (Read All)
 router.get('/', ProductController.index);

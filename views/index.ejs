@@ -61,14 +61,23 @@
     .price-label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
     .price{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.28rem;color:var(--ink);line-height:1.15}
     .foot-actions{position:relative;z-index:3;display:flex;gap:6px}
-    .btn-wa{background:#16a34a;color:#fff;border:0;width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem;border-radius:12px}
-    .btn-wa:hover{background:#15803d;color:#fff}
-    .btn-wa.closed{background:#e2e8f0;color:#64748b;cursor:not-allowed}
+    .btn-cart{background:#4f46e5;color:#fff;border:0;padding:0 14px;height:40px;display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:600;border-radius:12px}
+    .btn-cart:hover{background:#4338ca;color:#fff}
+    .btn-cart.closed{background:#e2e8f0;color:#64748b;cursor:not-allowed}
     .btn-more{background:#fff;border:1px solid var(--line);color:var(--muted);width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px}
     .btn-more:hover,.btn-more.show{background:#f1f5f9;color:var(--ink)}
     .dropdown-menu{border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-md);padding:6px;font-size:.9rem}
     .dropdown-item{border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px}
     .dropdown-item.text-danger:hover{background:#fef2f2}
+
+    /* Floating Cart Button (Digeser ke kiri agar tidak menutupi chatbot) */
+    .floating-cart-btn {
+      position: fixed; bottom: 30px; right: 110px; z-index: 1050;
+      background: #16a34a; color: #fff; border-radius: 50px; padding: 12px 24px;
+      box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4); display: flex; align-items: center; gap: 10px;
+      font-weight: 600; border: none; transition: transform 0.2s;
+    }
+    .floating-cart-btn:hover { transform: scale(1.05); background: #15803d; color: #fff; }
   </style>
 </head>
 <body>
@@ -78,7 +87,6 @@
   <%
     const total = products.length;
     const categories = [...new Set(products.map(p => p.category))];
-    const avg = total ? Math.round(products.reduce((s, p) => s + Number(p.price || 0), 0) / total) : 0;
     const themes = {
       'Sparepart': { c: 'theme-sparepart', i: 'bi-gear-wide-connected' },
       'Aksesoris': { c: 'theme-aksesoris', i: 'bi-shield-check' },
@@ -93,17 +101,16 @@
     <div class="container">
       <span class="hero-badge mb-4"><i class="bi bi-rocket-takeoff"></i> Enterprise Inventory &amp; Storefront System</span>
       <h1 class="mb-3">Pusat Suku Cadang &amp; <span>E-Bike Profesional</span></h1>
-      <p class="mb-4 fs-6">Solusi lengkap kebutuhan sepeda dan e-bike Anda dalam satu tempat. Temukan suku cadang asli dengan ketersediaan stok yang akurat dan layanan konsultasi produk yang ramah.</p>
+      <p class="mb-4 fs-6">Solusi lengkap kebutuhan sepeda dan e-bike Anda dalam satu tempat. Temukan suku cadang asli dengan ketersediaan stok yang akurat.</p>
       <div class="d-flex flex-wrap justify-content-center gap-2">
         <a href="#katalog" class="btn btn-brand px-4 py-2"><i class="bi bi-grid me-1"></i> Jelajahi Produk</a>
-        <button type="button" class="btn btn-ghost-light px-4 py-2" onclick="document.getElementById('aiFab').click()"><i class="bi bi-stars me-1"></i> Tanya Asisten AI</button>
       </div>
     </div>
   </header>
 
   <!-- Metrics / Ringkasan -->
   <section class="container metrics" aria-label="Ringkasan">
-   
+    <div class="row g-3 justify-content-center">
       <div class="col-6 col-lg-3">
         <div class="surface metric">
           <div class="metric-icon" style="background:#fffbeb;color:#d97706"><i class="bi bi-shield-check"></i></div>
@@ -119,7 +126,7 @@
       <div class="row align-items-center g-3">
         <div class="col-lg-5">
           <h2 class="h3 fw-bold mb-1">Daftar Produk</h2>
-          <p class="text-muted small mb-0">Cek ketersediaan suku cadang dan lakukan manajemen data.</p>
+          <p class="text-muted small mb-0">Cek ketersediaan suku cadang dan masukkan ke keranjang belanja.</p>
         </div>
         <div class="col-lg-7">
           <form action="/" method="GET" class="d-flex gap-2 justify-content-lg-end" role="search">
@@ -127,7 +134,7 @@
               <i class="bi bi-search text-muted"></i>
               <input type="text" name="search" value="<%= hasSearch ? searchQuery : '' %>" placeholder="Cari nama produk..." aria-label="Cari nama produk">
               <% if (hasSearch) { %>
-                <a href="/" class="btn btn-sm text-danger px-2" title="Reset pencarian" aria-label="Reset pencarian"><i class="bi bi-x-lg"></i></a>
+                <a href="/" class="btn btn-sm text-danger px-2" title="Reset pencarian"><i class="bi bi-x-lg"></i></a>
               <% } %>
             </div>
             <button type="submit" class="btn btn-dark px-4">Cari</button>
@@ -165,7 +172,6 @@
       <% } else { %>
         <% products.forEach(product => {
              const th = themes[product.category] || themes['Sparepart'];
-             const waText = 'Halo Admin BikeSupport, saya tertarik untuk membeli produk: *' + product.name + '*';
              const img = product.image || product.imageUrl || product.gambar || '';
         %>
           <div class="col-sm-6 col-lg-4 col-xl-3 product-col" data-category="<%= product.category %>">
@@ -191,13 +197,21 @@
                 </div>
                 <div class="foot-actions">
                   <% if (isOpen) { %>
-                  <a href="https://wa.me/6285158110356?text=<%= encodeURIComponent(waText) %>" target="_blank" rel="noopener"
-                       class="btn btn-wa" title="Pesan via WhatsApp" aria-label="Pesan <%= product.name %> via WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    <!-- TOMBOL KERANJANG HANYA MUNCUL JIKA BUKAN ADMIN (!locals.isAdmin) -->
+                    <% if (!locals.isAdmin) { %>
+                    <button type="button" class="btn btn-cart" 
+                            onclick="addToCart('<%= product.id %>', '<%= product.name.replace(/'/g, "\\'") %>', <%= product.price %>)"
+                            title="Tambah ke Keranjang">
+                      <i class="bi bi-cart-plus"></i> Keranjang
+                    </button>
+                    <% } %>
                   <% } else { %>
-                  <button type="button" class="btn btn-wa closed" disabled title="Toko sedang tutup" aria-label="Toko sedang tutup, pemesanan dinonaktifkan"><i class="bi bi-moon-stars"></i></button>
+                    <% if (!locals.isAdmin) { %>
+                    <button type="button" class="btn btn-cart closed" disabled title="Toko sedang tutup"><i class="bi bi-moon-stars"></i> Tutup</button>
+                    <% } %>
                   <% } %>
 
-                  <!-- TOMBOL EDIT & HAPUS HANYA MUNCUL JIKA ADMIN LOGIN -->
+                  <!-- TOMBOL EDIT & HAPUS ADMIN -->
                   <% if (locals.isAdmin) { %>
                   <div class="dropdown">
                     <button class="btn btn-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu produk"><i class="bi bi-three-dots-vertical"></i></button>
@@ -226,30 +240,222 @@
     </div>
   </main>
 
+  <!-- Tombol Mengambang Keranjang Belanja HANYA MUNCUL JIKA BUKAN ADMIN -->
+  <% if (!locals.isAdmin) { %>
+  <button type="button" class="floating-cart-btn" data-bs-toggle="modal" data-bs-target="#cartModal">
+    <i class="bi bi-cart3 fs-5"></i> Keranjang <span id="cartBadge" class="badge bg-light text-success rounded-pill">0</span>
+  </button>
+  <% } %>
+
+  <!-- Modal Keranjang Belanja & Checkout Form -->
+  <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="cartModalLabel"><i class="bi bi-cart-check me-2"></i> Keranjang Belanja Anda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <!-- Daftar Item di Keranjang -->
+          <div id="cartItemsContainer" class="table-responsive mb-3" style="max-height: 250px; overflow-y: auto;">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Harga</th>
+                  <th style="width: 100px;">Qty</th>
+                  <th>Subtotal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="cartTableBody">
+                <!-- Javascript will inject cart items here -->
+              </tbody>
+            </table>
+          </div>
+          <div id="emptyCartNotice" class="text-center py-4 text-muted">
+            <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+            Keranjang belanja masih kosong. Silakan pilih produk dari katalog.
+          </div>
+
+          <hr class="my-3">
+
+          <!-- Form Pemesanan / Checkout -->
+          <form id="checkoutForm">
+            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-file-earmark-text me-1"></i> Formulir Pengiriman Pesanan</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Nama Lengkap</label>
+                <input type="text" name="buyerName" class="form-control rounded-3" placeholder="Contoh: Budi Santoso" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Nomor WhatsApp / HP</label>
+                <input type="text" name="buyerPhone" class="form-control rounded-3" placeholder="Contoh: 081234567890" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Alamat Pengiriman Lengkap</label>
+                <textarea name="address" class="form-control rounded-3" rows="2" placeholder="Contoh: Jl. Ringroad Selatan, Yogyakarta" required></textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded-3">
+              <span class="fw-bold text-secondary">Total Pembayaran:</span>
+              <span id="cartTotalPrice" class="fs-5 fw-bold text-success">Rp 0</span>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light btn-rounded px-3" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" id="checkoutBtn" class="btn btn-success px-4 fw-semibold rounded-3" onclick="submitCheckout()" disabled>
+            <i class="bi bi-whatsapp me-1"></i> Kirim Pesanan &amp; WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <%- include('partials/footer') %>
 
   <script>
-    (function () {
-      var chips = Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
-      var cols = Array.prototype.slice.call(document.querySelectorAll('.product-col'));
-      var count = document.getElementById('resultCount');
-      var empty = document.getElementById('filterEmpty');
-      if (!chips.length) return;
-      chips.forEach(function (ch) {
-        ch.addEventListener('click', function () {
-          chips.forEach(function (c) { c.classList.remove('active'); });
-          ch.classList.add('active');
-          var f = ch.getAttribute('data-filter'), n = 0;
-          cols.forEach(function (c) {
-            var show = f === 'all' || c.getAttribute('data-category') === f;
-            c.classList.toggle('d-none', !show);
-            if (show) n++;
-          });
-          count.textContent = n;
-          empty.classList.toggle('d-none', n !== 0);
+    let cart = JSON.parse(localStorage.getItem('bikesupport_cart')) || [];
+
+    function saveCart() {
+      localStorage.setItem('bikesupport_cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    function addToCart(id, name, price) {
+      const existingItem = cart.find(item => item.id === id);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({ id, name, price: Number(price), quantity: 1 });
+      }
+      saveCart();
+      alert(`Produk "${name}" berhasil ditambahkan ke keranjang!`);
+    }
+
+    function updateQuantity(id, change) {
+      const item = cart.find(item => item.id === id);
+      if (item) {
+        item.quantity += change;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.id !== id);
+        }
+      }
+      saveCart();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      saveCart();
+    }
+
+    function updateCartUI() {
+      const cartTableBody = document.getElementById('cartTableBody');
+      const cartBadge = document.getElementById('cartBadge');
+      if (!cartBadge) return; // Jika admin, elemen badge tidak ada di DOM
+
+      cartTableBody.innerHTML = '';
+      let totalQty = 0;
+      let grandTotal = 0;
+
+      if (cart.length === 0) {
+        document.getElementById('emptyCartNotice').style.display = 'block';
+        document.getElementById('cartItemsContainer').style.display = 'none';
+        document.getElementById('checkoutBtn').disabled = true;
+      } else {
+        document.getElementById('emptyCartNotice').style.display = 'none';
+        document.getElementById('cartItemsContainer').style.display = 'block';
+        document.getElementById('checkoutBtn').disabled = false;
+
+        cart.forEach(item => {
+          totalQty += item.quantity;
+          const subtotal = item.price * item.quantity;
+          grandTotal += subtotal;
+
+          cartTableBody.innerHTML += `
+            <tr>
+              <td><span class="fw-semibold text-dark">${item.name}</span></td>
+              <td>Rp ${item.price.toLocaleString('id-ID')}</td>
+              <td>
+                <div class="input-group input-group-sm" style="width: 90px;">
+                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('${item.id}', -1)">-</button>
+                  <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
+                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('${item.id}', 1)">+</button>
+                </div>
+              </td>
+              <td class="fw-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td>
+              <td>
+                <button class="btn btn-sm text-danger" onclick="removeFromCart('${item.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          `;
         });
+      }
+
+      cartBadge.textContent = totalQty;
+      document.getElementById('cartTotalPrice').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+    }
+
+    document.addEventListener('DOMContentLoaded', updateCartUI);
+
+    async function submitCheckout() {
+      const form = document.getElementById('checkoutForm');
+      const buyerName = form.buyerName.value.trim();
+      const buyerPhone = form.buyerPhone.value.trim();
+      const address = form.address.value.trim();
+
+      if (!buyerName || !buyerPhone || !address) {
+        alert('Mohon lengkapi Nama, No. WhatsApp, dan Alamat pengiriman!');
+        return;
+      }
+
+      if (cart.length === 0) {
+        alert('Keranjang belanja masih kosong!');
+        return;
+      }
+
+      const productNameSummary = cart.map(i => `${i.name} (${i.quantity}x)`).join(', ');
+      const totalAmount = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+      const formData = new URLSearchParams();
+      formData.append('buyerName', buyerName);
+      formData.append('buyerPhone', buyerPhone);
+      formData.append('productName', productNameSummary);
+      formData.append('quantity', cart.reduce((s, i) => s + i.quantity, 0));
+      formData.append('totalPrice', totalAmount);
+      formData.append('address', address);
+
+      try {
+        await fetch('/admin/pesanan/tambah', {
+          method: 'POST',
+          body: formData,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+      } catch (err) {
+        console.error('Gagal mencatat pesanan ke DB:', err);
+      }
+
+      const phoneAdmin = "6285158110356";
+      let waText = `Halo Admin BikeSupport, saya *${buyerName}* ingin memesan produk berikut:\n\n`;
+      cart.forEach((item, idx) => {
+        waText += `${idx + 1}. ${item.name} x ${item.quantity} = Rp ${(item.price * item.quantity).toLocaleString('id-ID')}\n`;
       });
-    })();
+      waText += `\n*Total Belanja: Rp ${totalAmount.toLocaleString('id-ID')}*`;
+      waText += `\nAlamat Kirim: ${address}`;
+      waText += `\n\nMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
+
+      cart = [];
+      saveCart();
+      const modalEl = document.getElementById('cartModal');
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+
+      window.open(`https://wa.me/${phoneAdmin}?text=${encodeURIComponent(waText)}`, '_blank');
+      
+      form.reset();
+      alert('Pesanan berhasil dikirim dan dicatat ke sistem!');
+    }
   </script>
 </body>
 </html>

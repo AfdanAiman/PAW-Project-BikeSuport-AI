@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="bg-light">
+
+  <%- include('../partials/navbar', { active: 'pesanan' }) %>
+
+  <main class="container my-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="h3 fw-bold mb-1">Manajemen Pesanan Masuk (US-05)</h2>
+        <p class="text-muted small mb-0">Kelola formulir pemesanan pembeli dan perbarui status konfirmasi pesanan secara real-time.</p>
+      </div>
+      <a href="/" class="btn btn-outline-dark btn-sm"><i class="bi bi-arrow-left me-1"></i> Kembali ke Katalog</a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark small text-uppercase">
+              <tr>
+                <th class="ps-4">No</th>
+                <th>Nama Pembeli</th>
+                <th>No. WhatsApp</th>
+                <th>Produk Dipesan</th>
+                <th>Jumlah</th>
+                <th>Total Harga</th>
+                <th>Status Pesanan</th>
+                <th class="text-end pe-4">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (orders.length === 0) { %>
+                <tr>
+                  <td colspan="8" class="text-center py-5 text-muted">Belum ada formulir pemesanan yang masuk.</td>
+                </tr>
+              <% } else { %>
+                <% orders.forEach((order, index) => { %>
+                  <tr>
+                    <td class="ps-4 fw-semibold"><%= index + 1 %></td>
+                    <td><%= order.buyerName %></td>
+                    <td>
+                      <a href="https://wa.me/<%= order.buyerPhone %>" target="_blank" class="text-success text-decoration-none fw-semibold">
+                        <i class="bi bi-whatsapp me-1"></i> <%= order.buyerPhone %>
+                      </a>
+                    </td>
+                    <td class="fw-semibold text-dark"><%= order.productName %></td>
+                    <td><%= order.quantity %> unit</td>
+                    <td class="text-primary fw-bold">Rp <%= Number(order.totalPrice).toLocaleString('id-ID') %></td>
+                    <td>
+                      <span class="badge 
+                        <%= order.status === 'Pending' ? 'bg-warning text-dark' : '' %>
+                        <%= order.status === 'Dikonfirmasi / Diproses' ? 'bg-success' : '' %>
+                        <%= order.status === 'Selesai' ? 'bg-secondary' : '' %>">
+                        <%= order.status %>
+                      </span>
+                    </td>
+                    <td class="text-end pe-4">
+                      <div class="d-flex justify-content-end gap-2">
+                        <!-- Form Update Status -->
+                        <form action="/admin/pesanan/status/<%= order.id %>" method="POST" class="d-inline">
+                          <input type="hidden" name="status" value="Dikonfirmasi / Diproses">
+                          <button type="submit" class="btn btn-sm btn-success" title="Konfirmasi & Proses Pesanan">
+                            <i class="bi bi-check-lg"></i> Proses
+                          </button>
+                        </form>
+                        <!-- Form Hapus Pesanan -->
+                        <form action="/admin/pesanan/hapus/<%= order.id %>" method="POST" class="d-inline" onsubmit="return confirm('Hapus data pesanan ini?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

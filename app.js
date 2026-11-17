@@ -1,17 +1,19 @@
 const express = require('express');
 const path = require('path');
-const session = require('express-session'); // <-- TAMBAHKAN INI
+const session = require('express-session');
 const config = require('./config/appconfig');
 const logger = require('./middlewares/logger');
 const webRoutes = require('./routes/webRoutes');
 const apiRoutes = require('./routes/apiRoutes');
 const chatRoutes = require('./routes/chat.routes'); 
+const storeRoutes = require('./routes/storeRoutes');  
+const orderRoutes = require('./routes/orderRoutes');
+const storeStatus = require('./middlewares/storeStatus');
 const sequelize = require('./config/database');
 const ProductModel = require('./models/productModel');
+const OrderModel = require('./models/orderModel');
 
-const storeStatus = require('./middlewares/storeStatus');
-const storeRoutes = require('./routes/storeRoutes');  
-
+// 1. INISIALISASI 'app' HARUS PALING ATAS SEBELUM APAPUN MENGGUNAKANNYA
 const app = express();
 const PORT = process.env.PORT || config.port;
 
@@ -19,7 +21,8 @@ const PORT = process.env.PORT || config.port;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware Express
+// Middleware Static & Parser (Cukup dipanggil sekali dengan benar)
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -51,7 +54,6 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    // Sesuaikan username & password admin di sini atau di .env
     const adminUser = process.env.ADMIN_USERNAME || 'admin';
     const adminPass = process.env.ADMIN_PASSWORD || 'bikesupport123';
 
@@ -71,7 +73,8 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Pasang Routes Toko dan Web
+// --- DAFTARKAN SEMUA RUTE DI SINI ---
+app.use('/', orderRoutes);
 app.use('/', storeRoutes);         
 app.use('/', webRoutes);           
 
@@ -79,7 +82,7 @@ app.use('/', webRoutes);
 app.use('/api/chat', chatRoutes); 
 app.use('/api', apiRoutes);
 
-// Fungsi untuk memasukkan data awal jika tabel kosong
+// Fungsi untuk memasukkan data awal jika tabel produk kosong
 async function seedInitialData() {
     const count = await ProductModel.count();
     if (count === 0) {

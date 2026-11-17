@@ -59,22 +59,30 @@
           <p class="lh-lg mb-4"><%= product.description || 'Belum ada deskripsi untuk produk ini.' %></p>
 
           <div class="mt-auto d-grid gap-2">
-            <% if (isOpen) { %>
-            <a href="https://wa.me/6285158110356?text=<%= encodeURIComponent(waText) %>" target="_blank" rel="noopener"
-               class="btn btn-success btn-lg py-3 d-flex align-items-center justify-content-center gap-2">
-              <i class="bi bi-whatsapp"></i> Pesan via WhatsApp
-            </a>
-            <% } else { %>
-            <button type="button" class="btn btn-lg py-3 d-flex align-items-center justify-content-center gap-2" style="background:#e2e8f0;color:#475569" disabled>
-              <i class="bi bi-moon-stars"></i> Toko Sedang Tutup — Pemesanan Dinonaktifkan
-            </button>
+            <!-- TOMBOL PEMESANAN WHATSAPP HANYA MUNCUL JIKA BUKAN ADMIN -->
+            <% if (!locals.isAdmin) { %>
+              <% if (isOpen) { %>
+              <a href="https://wa.me/6285158110356?text=<%= encodeURIComponent(waText) %>" target="_blank" rel="noopener"
+                 class="btn btn-success btn-lg py-3 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-whatsapp"></i> Pesan via WhatsApp
+              </a>
+              <% } else { %>
+              <button type="button" class="btn btn-lg py-3 d-flex align-items-center justify-content-center gap-2" style="background:#e2e8f0;color:#475569" disabled>
+                <i class="bi bi-moon-stars"></i> Toko Sedang Tutup — Pemesanan Dinonaktifkan
+              </button>
+              <% } %>
             <% } %>
+
+            <!-- TOMBOL NAVIGASI & MANAJEMEN ADMIN -->
             <div class="d-flex gap-2">
               <a href="/" class="btn btn-soft flex-grow-1 py-2"><i class="bi bi-arrow-left me-1"></i> Produk Lainnya</a>
+              
+              <% if (locals.isAdmin) { %>
               <a href="/edit-produk/<%= product.id %>" class="btn btn-soft py-2 px-3" title="Edit produk"><i class="bi bi-pencil-square me-1"></i> Edit</a>
               <form action="/hapus-produk/<%= product.id %>" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
                 <button type="submit" class="btn btn-soft danger py-2 px-3" title="Hapus produk"><i class="bi bi-trash"></i></button>
               </form>
+              <% } %>
             </div>
           </div>
         </div>

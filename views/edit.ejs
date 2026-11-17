@@ -21,12 +21,13 @@
         <div class="d-flex align-items-center justify-content-center fs-4" style="width:50px;height:50px;border-radius:14px;background:#fffbeb;color:#d97706"><i class="bi bi-pencil-square"></i></div>
         <div class="flex-grow-1">
           <h1 class="h3 fw-bold mb-0">Edit Produk</h1>
-          <p class="text-muted small mb-0">Perbarui informasi produk di katalog.</p>
+          <p class="text-muted small mb-0">Perbarui informasi produk dan foto di katalog.</p>
         </div>
         <span class="badge rounded-pill text-bg-light border px-3 py-2 text-muted">ID #<%= product.id %></span>
       </div>
 
-      <form action="/edit-produk/<%= product.id %>" method="POST" class="d-grid gap-4">
+      <!-- WAJIB ENCTYPE MULTIPART UNTUK UPLOAD FILE -->
+      <form action="/edit-produk/<%= product.id %>" method="POST" enctype="multipart/form-data" class="d-grid gap-4">
         <div>
           <label for="name" class="form-label">Nama Produk</label>
           <input type="text" id="name" name="name" value="<%= product.name %>" class="form-control" required>
@@ -53,6 +54,19 @@
         <div>
           <label for="description" class="form-label">Deskripsi</label>
           <textarea id="description" name="description" rows="4" class="form-control"><%= product.description %></textarea>
+        </div>
+
+        <!-- INPUT UPLOAD FOTO PRODUK -->
+        <div>
+          <label for="image" class="form-label">Ganti Foto Produk</label>
+          <% if (product.image) { %>
+            <div class="mb-2">
+              <img src="<%= product.image %>" alt="Preview Foto" class="rounded border" style="width: 80px; height: 80px; object-fit: cover;">
+              <span class="text-muted small ms-2">Foto saat ini</span>
+            </div>
+          <% } %>
+          <input type="file" id="image" name="image" class="form-control" accept="image/*">
+          <small class="text-muted">Biarkan kosong jika tidak ingin mengubah foto produk.</small>
         </div>
 
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2 pt-3 border-top">

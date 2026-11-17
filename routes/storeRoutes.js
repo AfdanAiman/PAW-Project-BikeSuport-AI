@@ -29,9 +29,5 @@ router.post('/toko/status', (req, res) => {
   setStatus({ open, message: req.body.message, reopenAt: req.body.reopenAt });
   res.redirect('/?toko=' + (open ? 'dibuka' : 'ditutup'));
 });
-// Jika ada rute untuk mengubah/mengatur status toko, amankan dengan isAdmin:
-router.post('/toko/status', isAdmin, storeController.updateStatus); 
-// atau rute halaman pengaturan toko:
-router.get('/toko/pengaturan', isAdmin, storeController.renderSettings);
  
 module.exports = router;

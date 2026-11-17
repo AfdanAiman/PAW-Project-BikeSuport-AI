@@ -22,6 +22,11 @@ const ProductModel = sequelize.define('Product', {
     description: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    // TAMBAHKAN KOLOM IMAGE DI SINI AGAR TERDAFTAR DI DATABASE
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     tableName: 'products',

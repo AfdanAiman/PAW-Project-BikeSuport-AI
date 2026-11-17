@@ -17,10 +17,12 @@
         
         <% if (locals.isAdmin) { %>
           <a class="btn btn-brand btn-sm ms-lg-2 mt-2 mt-lg-0 px-3 py-2" href="/tambah-produk"><i class="bi bi-plus-lg me-1"></i> Tambah Produk</a>
+          <a class="nav-link text-warning fw-semibold" href="/admin/pesanan"><i class="bi bi-journal-check me-1"></i> Kelola Pesanan</a>
           <a class="btn btn-outline-danger btn-sm ms-lg-2 mt-2 mt-lg-0 px-3 py-2" href="/logout"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
         <% } else { %>
           <a class="btn btn-outline-light btn-sm ms-lg-2 mt-2 mt-lg-0 px-3 py-2" href="/login"><i class="bi bi-shield-lock me-1"></i> Login Admin</a>
         <% } %>
+        
       </div>
     </div>
   </div>
