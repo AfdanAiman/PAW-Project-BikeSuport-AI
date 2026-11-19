@@ -144,7 +144,7 @@
     </div>
 
     <% if (hasSearch) { %>
-      <p class="text-muted small mb-3"><i class="bi bi-funnel me-1"></i> Hasil pencarian untuk <strong class="text-dark">&ldquo;<%= searchQuery %>&rdquo;</strong></p>
+      <p class="text-muted small mb-3"><i class="bi bi-funnel me-1"></i> Hasil pencarian untuk <strong class="text-dark">"<%= searchQuery %>"</strong></p>
     <% } %>
 
     <% if (total > 0) { %>
@@ -197,10 +197,11 @@
                 </div>
                 <div class="foot-actions">
                   <% if (isOpen) { %>
-                    <!-- TOMBOL KERANJANG HANYA MUNCUL JIKA BUKAN ADMIN (!locals.isAdmin) -->
                     <% if (!locals.isAdmin) { %>
-                    <button type="button" class="btn btn-cart" 
-                            onclick="addToCart('<%= product.id %>', '<%= product.name.replace(/'/g, "\\'") %>', <%= product.price %>)"
+                    <button type="button" class="btn btn-cart btn-add-cart"
+                            data-id="<%= product.id %>"
+                            data-name="<%= product.name %>"
+                            data-price="<%= product.price %>"
                             title="Tambah ke Keranjang">
                       <i class="bi bi-cart-plus"></i> Keranjang
                     </button>
@@ -211,7 +212,6 @@
                     <% } %>
                   <% } %>
 
-                  <!-- TOMBOL EDIT & HAPUS ADMIN -->
                   <% if (locals.isAdmin) { %>
                   <div class="dropdown">
                     <button class="btn btn-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu produk"><i class="bi bi-three-dots-vertical"></i></button>
@@ -256,7 +256,6 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body py-3">
-          <!-- Daftar Item di Keranjang -->
           <div id="cartItemsContainer" class="table-responsive mb-3" style="max-height: 250px; overflow-y: auto;">
             <table class="table align-middle">
               <thead>
@@ -268,9 +267,7 @@
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody id="cartTableBody">
-                <!-- Javascript will inject cart items here -->
-              </tbody>
+              <tbody id="cartTableBody"></tbody>
             </table>
           </div>
           <div id="emptyCartNotice" class="text-center py-4 text-muted">
@@ -280,7 +277,6 @@
 
           <hr class="my-3">
 
-          <!-- Form Pemesanan / Checkout -->
           <form id="checkoutForm">
             <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-file-earmark-text me-1"></i> Formulir Pengiriman Pesanan</h6>
             <div class="row g-3">
@@ -305,7 +301,7 @@
         </div>
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-light btn-rounded px-3" data-bs-dismiss="modal">Tutup</button>
-          <button type="button" id="checkoutBtn" class="btn btn-success px-4 fw-semibold rounded-3" onclick="submitCheckout()" disabled>
+          <button type="button" id="checkoutBtn" class="btn btn-success px-4 fw-semibold rounded-3" disabled>
             <i class="bi bi-whatsapp me-1"></i> Kirim Pesanan &amp; WhatsApp
           </button>
         </div>
@@ -331,7 +327,6 @@
         cart.push({ id, name, price: Number(price), quantity: 1 });
       }
       saveCart();
-      alert(`Produk "${name}" berhasil ditambahkan ke keranjang!`);
     }
 
     function updateQuantity(id, change) {
@@ -353,7 +348,7 @@
     function updateCartUI() {
       const cartTableBody = document.getElementById('cartTableBody');
       const cartBadge = document.getElementById('cartBadge');
-      if (!cartBadge) return; // Jika admin, elemen badge tidak ada di DOM
+      if (!cartBadge) return;
 
       cartTableBody.innerHTML = '';
       let totalQty = 0;
@@ -373,23 +368,23 @@
           const subtotal = item.price * item.quantity;
           grandTotal += subtotal;
 
-          cartTableBody.innerHTML += `
-            <tr>
-              <td><span class="fw-semibold text-dark">${item.name}</span></td>
-              <td>Rp ${item.price.toLocaleString('id-ID')}</td>
-              <td>
-                <div class="input-group input-group-sm" style="width: 90px;">
-                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('${item.id}', -1)">-</button>
-                  <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
-                  <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('${item.id}', 1)">+</button>
-                </div>
-              </td>
-              <td class="fw-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td>
-              <td>
-                <button class="btn btn-sm text-danger" onclick="removeFromCart('${item.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
-              </td>
-            </tr>
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><span class="fw-semibold text-dark">${item.name}</span></td>
+            <td>Rp ${item.price.toLocaleString('id-ID')}</td>
+            <td>
+              <div class="input-group input-group-sm" style="width: 90px;">
+                <button class="btn btn-outline-secondary btn-qty-dec" type="button" data-id="${item.id}">-</button>
+                <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
+                <button class="btn btn-outline-secondary btn-qty-inc" type="button" data-id="${item.id}">+</button>
+              </div>
+            </td>
+            <td class="fw-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td>
+            <td>
+              <button class="btn btn-sm text-danger btn-remove-item" type="button" data-id="${item.id}" title="Hapus"><i class="bi bi-trash"></i></button>
+            </td>
           `;
+          cartTableBody.appendChild(row);
         });
       }
 
@@ -397,7 +392,46 @@
       document.getElementById('cartTotalPrice').textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
     }
 
-    document.addEventListener('DOMContentLoaded', updateCartUI);
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCartUI();
+
+      document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', function () {
+          addToCart(
+            this.getAttribute('data-id'),
+            this.getAttribute('data-name'),
+            this.getAttribute('data-price')
+          );
+        });
+      });
+
+      const cartTableBody = document.getElementById('cartTableBody');
+      if (cartTableBody) {
+        cartTableBody.addEventListener('click', function (e) {
+          const decBtn = e.target.closest('.btn-qty-dec');
+          if (decBtn) {
+            updateQuantity(decBtn.getAttribute('data-id'), -1);
+            return;
+          }
+
+          const incBtn = e.target.closest('.btn-qty-inc');
+          if (incBtn) {
+            updateQuantity(incBtn.getAttribute('data-id'), 1);
+            return;
+          }
+
+          const remBtn = e.target.closest('.btn-remove-item');
+          if (remBtn) {
+            removeFromCart(remBtn.getAttribute('data-id'));
+          }
+        });
+      }
+
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', submitCheckout);
+      }
+    });
 
     async function submitCheckout() {
       const form = document.getElementById('checkoutForm');
@@ -406,12 +440,10 @@
       const address = form.address.value.trim();
 
       if (!buyerName || !buyerPhone || !address) {
-        alert('Mohon lengkapi Nama, No. WhatsApp, dan Alamat pengiriman!');
         return;
       }
 
       if (cart.length === 0) {
-        alert('Keranjang belanja masih kosong!');
         return;
       }
 
@@ -452,9 +484,8 @@
       if (modalInstance) modalInstance.hide();
 
       window.open(`https://wa.me/${phoneAdmin}?text=${encodeURIComponent(waText)}`, '_blank');
-      
+
       form.reset();
-      alert('Pesanan berhasil dikirim dan dicatat ke sistem!');
     }
   </script>
 </body>

@@ -1,6 +1,5 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-const pg = require('pg');
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -9,7 +8,6 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: 'postgres',
-        dialectModule: pg,
         port: process.env.DB_PORT,
         logging: false // Set true jika ingin melihat log SQL query di terminal
     }
